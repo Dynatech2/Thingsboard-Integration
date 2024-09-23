@@ -1,12 +1,13 @@
 ![thingsboard_logo](https://github.com/user-attachments/assets/df30dda5-5355-4936-836d-92ff8a2165e4)
 # Thingsboard-Integration
+- [What is ThingsBoard?](#What-is-ThingsBoard?)
 - [Thingsboard Installation and Configuration](#Thingsboard-Installation-and-Configuration)
-- Setting up Thingsboard (Server and Local)
-- Connecting to Node-Red via MQTT
-- Dashboard and Visualization
-- Designing Dashboards (Waiting Time, Barchart, etc.)
-- Streaming Video Integration
-- Map and Graph Composer Configurations
+- [Setting up Thingsboard (Server and Local)](#Setting-up-Thingsboard-(Server-and-Local))
+- [Connecting to Node-Red via MQTT](#Connecting-to-Node-Red-via-MQTT)
+- [Dashboard and Visualization](#Dashboard-and-Visualization)
+- [Designing Dashboards (Waiting Time, Barchart, etc.)](#Designing-Dashboards-(Waiting-Time-Barchart-etc))
+- [Streaming Video Integration](#Streaming-Video-Integration)
+- [Map and Graph Composer Configurations](#Map-and-Graph-Composer-Configurations)
 
 ## What is ThingsBoard?
 ThingsBoard is an open-source IoT platform that enables rapid development, management, and scaling of IoT projects. Our goal is to provide the out-of-the-box IoT cloud or on-premises solution that will enable server-side infrastructure for your IoT applications.
