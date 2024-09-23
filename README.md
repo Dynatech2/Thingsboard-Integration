@@ -84,3 +84,205 @@ PostgreSQL(recommended for < 5K msg/sec)
 Hybrid
 PostgreSQL+Cassandra
 (recommended for > 5K msg/sec)
+Doc info icon
+ThingsBoard team recommends to use PostgreSQL for development and production environments with reasonable load (< 5000 msg/sec). Many cloud vendors support managed PostgreSQL servers which is a cost-effective solution for most of ThingsBoard instances.
+
+PostgreSQL Installation
+Instructions listed below will help you to install PostgreSQL.
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+# install **wget** if not already installed:
+sudo apt install -y wget
+
+# import the repository signing key:
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+
+# add repository contents to your system:
+echo "deb https://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee  /etc/apt/sources.list.d/pgdg.list
+
+# install and launch the postgresql service:
+sudo apt update
+sudo apt -y install postgresql-15
+sudo service postgresql start
+Once PostgreSQL is installed you may want to create a new user or set the password for the the main user. The instructions below will help to set the password for main postgresql user
+
+1
+2
+3
+4
+sudo su - postgres
+psql
+\password
+\q
+Then, press “Ctrl+D” to return to main user console and connect to the database to create thingsboard DB:
+
+1
+2
+3
+psql -U postgres -d postgres -h 127.0.0.1 -W
+CREATE DATABASE thingsboard;
+\q
+ThingsBoard Configuration
+Edit ThingsBoard configuration file
+
+sudo nano /etc/thingsboard/conf/thingsboard.conf
+Add the following lines to the configuration file. Don’t forget to replace “PUT_YOUR_POSTGRESQL_PASSWORD_HERE” with your real postgres user password:
+
+1
+2
+3
+4
+5
+6
+7
+# DB Configuration 
+export DATABASE_TS_TYPE=sql
+export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/thingsboard
+export SPRING_DATASOURCE_USERNAME=postgres
+export SPRING_DATASOURCE_PASSWORD=PUT_YOUR_POSTGRESQL_PASSWORD_HERE
+# Specify partitioning size for timestamp key-value storage. Allowed values: DAYS, MONTHS, YEARS, INDEFINITE.
+export SQL_POSTGRES_TS_KV_PARTITIONING=MONTHS
+Step 5. Choose ThingsBoard queue service
+ThingsBoard is able to use various messaging systems/brokers for storing the messages and communication between ThingsBoard services. How to choose the right queue implementation?
+
+In Memory queue implementation is built-in and default. It is useful for development(PoC) environments and is not suitable for production deployments or any sort of cluster deployments.
+
+Kafka is recommended for production deployments. This queue is used on the most of ThingsBoard production environments now. It is useful for both on-prem and private cloud deployments. It is also useful if you like to stay independent from your cloud provider. However, some providers also have managed services for Kafka. See AWS MSK for example.
+
+RabbitMQ is recommended if you don’t have much load and you already have experience with this messaging system.
+
+AWS SQS is a fully managed message queuing service from AWS. Useful if you plan to deploy ThingsBoard on AWS.
+
+Google Pub/Sub is a fully managed message queuing service from Google. Useful if you plan to deploy ThingsBoard on Google Cloud.
+
+Azure Service Bus is a fully managed message queuing service from Azure. Useful if you plan to deploy ThingsBoard on Azure.
+
+Confluent Cloud is a fully managed streaming platform based on Kafka. Useful for a cloud agnostic deployments.
+
+See corresponding architecture page and rule engine page for more details.
+
+In Memory
+(built-in and default)
+Kafka
+(recommended for on-prem, production installations)
+Kafka in docker container
+(recommended for on-prem, production installations)
+AWS SQS
+(managed service from AWS)
+Google Pub/Sub
+(managed service from Google)
+Azure Service Bus
+(managed service from Azure)
+RabbitMQ
+(for small on-prem installations)
+Confluent Cloud
+(Event Streaming Platform based on Kafka)
+In Memory queue is built-in and enabled by default. No additional configuration steps required.
+
+Step 6. [Optional] Memory update for slow machines (4GB of RAM)
+Edit ThingsBoard configuration file
+
+sudo nano /etc/thingsboard/conf/thingsboard.conf
+Add the following lines to the configuration file.
+
+1
+2
+# Update ThingsBoard memory usage and restrict it to 2G in /etc/thingsboard/conf/thingsboard.conf
+export JAVA_OPTS="$JAVA_OPTS -Xms2G -Xmx2G"
+We recommend adjusting these parameters depending on your server resources. It should be set to at least 2G (gigabytes), and increased accordingly if there is additional RAM space available. Usually, you need to set it to 1/2 of your total RAM if you do not run any other memory-intensive processes (e.g. Cassandra), or to 1/3 otherwise.
+
+Step 7. Run installation script
+Once ThingsBoard service is installed and DB configuration is updated, you can execute the following script:
+
+1
+2
+# --loadDemo option will load demo data: users, devices, assets, rules, widgets.
+sudo /usr/share/thingsboard/bin/install/install.sh --loadDemo
+Step 8. Start ThingsBoard service
+Execute the following command to start ThingsBoard:
+
+sudo service thingsboard start
+Once started, you will be able to open Web UI using the following link:
+
+http://localhost:8080/
+The following default credentials are available if you have specified –loadDemo during execution of the installation script:
+
+System Administrator: sysadmin@thingsboard.org / sysadmin
+Tenant Administrator: tenant@thingsboard.org / tenant
+Customer User: customer@thingsboard.org / customer
+You can always change passwords for each account in account profile page.
+
+Doc info icon
+Please allow up to 90 seconds for the Web UI to start.
+
+Step 9. Install ThingsBoard WebReport component
+Download installation package for the Reports Server component:
+
+wget https://dist.thingsboard.io/tb-web-report-3.7pe.deb
+Install third-party libraries:
+
+1
+2
+3
+4
+5
+sudo apt install -yq gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 \
+     libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 \
+     libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 \
+     libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 \
+     ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils unzip wget libgbm-dev
+Install Roboto fonts:
+
+sudo apt install fonts-roboto
+Install Noto fonts (Japanese, Chinese, etc.):
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+mkdir ~/noto
+cd ~/noto
+wget https://noto-website.storage.googleapis.com/pkgs/NotoSansCJKjp-hinted.zip
+unzip NotoSansCJKjp-hinted.zip
+sudo mkdir -p /usr/share/fonts/noto
+sudo cp *.otf /usr/share/fonts/noto
+sudo chmod 655 -R /usr/share/fonts/noto/
+sudo fc-cache -fv
+cd ..
+rm -rf ~/noto
+Install and start Web Report service:
+
+1
+2
+sudo dpkg -i tb-web-report-3.7pe.deb
+sudo service tb-web-report start
+Post-installation steps
+Configure HAProxy to enable HTTPS
+
+You may want to configure HTTPS access using HAProxy. This is possible in case you are hosting ThingsBoard in the cloud and have a valid DNS name assigned to your instance. Please follow this guide to install HAProxy and generate valid SSL certificate using Let’s Encrypt.
+
+Troubleshooting
+ThingsBoard logs are stored in the following directory:
+
+/var/log/thingsboard
+You can issue the following command in order to check if there are any errors on the backend side:
+
+cat /var/log/thingsboard/thingsboard.log | grep ERROR
