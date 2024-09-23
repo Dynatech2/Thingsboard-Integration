@@ -1,6 +1,6 @@
 ![thingsboard_logo](https://github.com/user-attachments/assets/df30dda5-5355-4936-836d-92ff8a2165e4)
 # Thingsboard-Integration
-- Thingsboard Installation and Configuration
+- [Thingsboard Installation and Configuration](#Thingsboard Installation and Configuration)
 - Setting up Thingsboard (Server and Local)
 - Connecting to Node-Red via MQTT
 - Dashboard and Visualization
