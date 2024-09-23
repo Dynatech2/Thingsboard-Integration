@@ -1,3 +1,4 @@
+                                             ![images](https://github.com/user-attachments/assets/7c28d81d-9482-4000-bd46-9613088a69cc)
 
 # Thingsboard-Integration
 - Thingsboard Installation and Configuration
