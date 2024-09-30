@@ -259,4 +259,242 @@ cat /var/log/thingsboard/thingsboard.log | grep ERROR
 ## Dashboard and Visualization
 ## Designing Dashboards (Waiting Time, Barchart, etc.)
 ## Streaming Video Integration
+---
 ## Map and Graph Composer Configurations
+
+- Widget type: Time Series
+- Widget Settings:
+
+![image](https://github.com/user-attachments/assets/fcc9d4be-3505-4a95-8adf-31225a613191)
+
+
+**Step 1: Create a MapTiler Account and Obtain an API Key**
+
+1. Sign up for MapTiler:
+
+- To use MapTiler maps in your project, you'll first need to create an account and obtain an API key.
+- Visit the MapTiler website and either sign in or create a new account if you don’t already have one.
+
+2. Create a new project:
+
+- Once you're signed in, navigate to the Maps section and choose a map style that fits your needs (e.g., Streets, Satellite, Dark, etc.).
+  
+3. Generate your API key:
+
+- After selecting the desired map style, go to the API Keys section in your MapTiler dashboard.
+- Generate a new API key by clicking on the Create API key button, which will be used later to access MapTiler tiles in your project.
+  
+Copy the API key and keep it in a safe place. You will need it in Step 3 to configure the map.
+
+**Step 2: Set Up the HTML Structure**
+
+1. Create an HTML File (index.html):
+   
+- This file defines the structure of the web page, including the map container, and links to external CSS and JavaScript files.
+- Inside the <head> section, add a link to the CSS file (styles.css) and the viewport settings to ensure the page is responsive on all devices.
+- Inside the <body>, create a div for the map container, which will be styled later. Additionally, include a canvas element for optional visual effects (e.g., blur overlay).
+
+```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subang Jaya Map</title>
+  <!-- Link to external CSS for styling -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Map Container -->
+  <div id="map-container" style="position: relative; width: 100%; height: 600px;">
+    <!-- Map element where Leaflet will render the map -->
+    <div id="map" style="width: 100%; height: 100%;"></div>
+    <!-- Optional canvas for visual effects, such as blurring -->
+    <canvas id="blur-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+  </div>
+
+  <!-- Leaflet.js script from CDN to handle map rendering -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <!-- Link to external JavaScript for map logic -->
+  <script src="script.js"></script>
+</body>
+</html>
+```
+**Step 3: Add CSS for Styling the Map and Page**
+
+2. Create a CSS File (styles.css):
+   
+- Define the layout and visual styles for the page. The body tag removes any default margins and padding, while the map-container and map ensure that the map element takes up the full height and width of the container.
+- Add styles for the blur-canvas to create a blur effect, if necessary, and ensure no scrollbars appear on the page.
+
+```
+/* Remove default margins and padding from the body */
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevent page scrollbars */
+}
+
+/* Style for the container holding the map */
+.map-container {
+  position: relative;
+  width: 100%; /* Full width for responsive design */
+  height: 500px; /* Set a specific height for the map */
+}
+
+/* Style the map element to occupy the entire container */
+#map {
+  height: 100%; /* Take up full height of the container */
+  position: relative;
+  z-index: 1; /* Ensure the map appears above other elements */
+}
+
+/* Add a blur overlay effect using CSS for a visual effect (optional) */
+.blur-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+  filter: blur(10px); /* Apply a blur effect */
+  z-index: 0; /* Ensure the blur appears behind the map */
+}
+
+/* Create a margin-like effect by adding a border inside the map container */
+.map-container:before {
+  content: ''; /* Empty content to create a visual margin */
+  position: absolute;
+  top: 10px; left: 10px; right: 10px; bottom: 10px; /* Adjust margin as needed */
+  background: inherit; /* Same background as the overlay */
+  z-index: 0; /* Keep it behind the map */
+  filter: none; /* No blur effect inside the border */
+}
+
+/* Additional style for the blur canvas */
+#blur-canvas {
+  filter: blur(10px); /* Apply a blur effect to the canvas */
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay color */
+}
+```
+**Step 4: Initialize and Configure the Map in JavaScript**
+
+3. Create a JavaScript File (script.js):
+   
+- This script will initialize the map using the Leaflet.js library. Leaflet is a popular open-source library for interactive maps.
+- The map is initialized with specific zoom controls, boundaries, and tile layers from MapTiler. The boundaries (defined by GPS coordinates) ensure the map stays focused on the Subang Jaya area.
+- The MapTiler tile layer is included using the API key generated in Step 1.
+
+```
+self.onInit = function() {
+  // Define the bounding box for the Subang Jaya region (top-left and bottom-right corners)
+  const corner1 = L.latLng(3.08755, 101.54414); // Top-left corner
+  const corner2 = L.latLng(2.9649241, 101.7458); // Bottom-right corner
+
+  // Create a Leaflet bounds object from the corners
+  const bounds = L.latLngBounds(corner1, corner2);
+
+  // Initialize the Leaflet map and attach it to the 'map' element
+  self.ctx.map = L.map('map', {
+    zoomControl: true, // Enable zoom controls (plus/minus buttons)
+    dragging: true,    // Allow dragging/panning of the map
+    maxBounds: bounds, // Restrict the map to stay within the bounding box
+    maxBoundsViscosity: 1.0, // Strictly limit panning outside the bounds
+    zoom: 12.49        // Initial zoom level (focused on Subang Jaya)
+  });
+
+  // Fit the map view to the bounding box, ensuring all areas are visible
+  self.ctx.map.fitBounds(bounds);
+
+  // Set the minimum and maximum zoom levels for the map
+  const minZoom = 12.49;
+  self.ctx.map.setMinZoom(minZoom); // Prevent zooming out beyond this level
+  self.ctx.map.setMaxZoom(19);      // Allow zooming in up to level 19
+
+  // Add a tile layer using MapTiler (dark theme) and your API key from Step 1
+  L.tileLayer('https://api.maptiler.com/maps/streets-v2-dark/{z}/{x}/{y}.png?key=YOUR_API_KEY', {
+    attribution: '© MapTiler © OpenStreetMap contributors', // Tile layer attribution
+    maxZoom: 19 // Maximum zoom level for tile display
+  }).addTo(self.ctx.map); // Add the tile layer to the map
+
+  // Prevent panning outside the specified bounds
+  self.ctx.map.on('drag', function() {
+    self.ctx.map.panInsideBounds(bounds, { animate: false }); // Keep within bounds
+  });
+
+  // Ensure that zooming out doesn't go beyond the minimum zoom level
+  self.ctx.map.on('zoomend', function() {
+    if (self.ctx.map.getZoom() < minZoom) {
+      self.ctx.map.setZoom(minZoom); // Reset to minimum zoom if zoomed out too far
+    }
+  });
+};
+```
+**Step 5: Define the Bounding Box and Subang Jaya Polygon**
+
+4. Add Polygons for the Map:
+   
+- To visually represent the Subang Jaya area, a polygon is created using GPS coordinates.
+- The bounding box encloses the entire region, while the Subang Jaya polygon represents a specific area inside that boundary.
+
+```
+// Define coordinates for the bounding box around Subang Jaya
+const boundingBoxCoords = [
+  [3.2352, 101.41],   // Top-left corner
+  [3.2352, 102.0954], // Top-right corner
+  [2.8793, 102.0954], // Bottom-right corner
+  [2.8793, 101.41],   // Bottom-left corner
+  [3.2352, 101.41]    // Back to top-left to close the box
+];
+
+// Define coordinates for the Subang Jaya area (as a hole within the bounding box)
+const subangJayaPolygonCoords = [
+  // Add Subang Jaya GPS coordinates here (from the provided list)
+];
+
+// Combine the bounding box with Subang Jaya as a hole (inner polygon)
+const boundingWithHole = [
+  boundingBoxCoords,         // Outer bounding box
+  subangJayaPolygonCoords     // Inner hole (Subang Jaya polygon)
+];
+
+// Create a polygon with the outer bounding box and inner hole
+const polygonWithHole = L.polygon(boundingWithHole, {
+  color: '#0C0C36',    // Border color for the bounding box
+  fillColor: '#0C0C36', // Fill color for the bounding box
+  fillOpacity: 1        // Full opacity for the filled area outside Subang Jaya
+}).addTo(self.ctx.map);
+
+// Add a separate polygon for Subang Jaya with only an outline (no fill)
+const subangJayaPolygon = L.polygon(subangJayaPolygonCoords, {
+  color: '#0C0C36',    // Border color for Subang Jaya
+  fillColor: 'transparent', // No fill for the Subang Jaya area
+  fillOpacity: 0        // Fully transparent fill
+}).addTo(self.ctx.map);
+
+// Optionally fit the map to the bounds of the polygon with the hole
+self.ctx.map.fitBounds(polygonWithHole.getBounds());
+```
+**Step 6: Handle Resizing and Cleanup**
+
+5. Ensure Proper Map Resizing and Cleanup:
+   
+- Use the invalidateSize() function from Leaflet to ensure the map resizes correctly when the window size changes.
+- Clean up resources by removing the map when the widget is destroyed to prevent memory leaks.
+  
+```
+// Handle map resizing when the browser window or container changes size
+self.onResize = function() {
+  if (self.ctx.map) {
+    self.ctx.map.invalidateSize(); // Correctly resize the map
+  }
+};
+
+// Clean up resources when the map widget is destroyed
+self.onDestroy = function() {
+  if (self.ctx.map) {
+    self.ctx.map.remove(); // Remove the map from the DOM
+    self.ctx.map = null;   // Set the map reference to null to prevent memory leaks
+  }
+};
+```
