@@ -274,6 +274,9 @@ cat /var/log/thingsboard/thingsboard.log | grep ERROR
 
 - To use MapTiler maps in your project, you'll first need to create an account and obtain an API key.
 - Visit the MapTiler website and either sign in or create a new account if you don’t already have one.
+  
+![image](https://github.com/user-attachments/assets/9e760523-c8b4-4004-a135-bf627dd08ab8)
+
 
 2. Create a new project:
 
